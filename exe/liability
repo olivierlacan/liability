@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+require 'liability/checker'
+Liability::Checker.invoke

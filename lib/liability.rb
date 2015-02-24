@@ -1,5 +1,5 @@
 require "liability/version"
+require "liability/checker"
 
 module Liability
-  # Your code goes here...
 end
