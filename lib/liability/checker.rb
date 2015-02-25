@@ -3,7 +3,8 @@ require "pathname"
 module Liability
   class Checker
     RUBY_VERSION_FILES = [ ".ruby-vesion", "Gemfile" ]
-    VERSION_NUMBER_PATTERN = /^(?:ruby)\s['"](\d.\d.\d)['"]$/
+    RUBY_VERSION_NUMBER_PATTERN = /^(\d.\d.\d)$/
+    GEMFILE_VERSION_NUMBER_PATTERN = /^(?:ruby)\s['"](\d.\d.\d)['"]$/
     SUPPORTED_RUBY_VERSIONS = %w[
       2.0.0-preview1
       2.0.0-preview2
@@ -101,14 +102,26 @@ module Liability
       files.map do |file|
         versions = []
 
-        File.open file, "r" do |f|
-          versions = f.each_line.map do |line|
-            match = line.match(VERSION_NUMBER_PATTERN)
-            match ? match.captures.first : nil
+        # ASCII-8BIT is forcing the encoding to ASCII-8BIT which seems
+        # strange but prevents invalid character exceptions from many
+        # Gemfiles and .ruby-version files.
+        if file.to_s.include?("Gemfile")
+          File.open file, "r:ASCII-8BIT" do |f|
+            versions = f.each_line.map do |line|
+              match = line.match(GEMFILE_VERSION_NUMBER_PATTERN)
+              match ? match.captures.first : nil
+            end
+          end
+        else
+          File.open file, "r:ASCII-8BIT" do |f|
+            versions = f.each_line.map do |line|
+              match = line.match(RUBY_VERSION_NUMBER_PATTERN)
+              match ? match.captures.first : nil
+            end
           end
         end
 
-        versions.uniq
+        versions.compact.uniq
       end
     end
 
